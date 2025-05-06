@@ -2,9 +2,14 @@ package org.example.oop
 
 /**
  * Tính kế thừa – Inheritance trong Kotlin
- * Kế thừa (Inheritance) là khả năng giúp 1 Class sử dụng lại các thuộc tính (properties) và hàm (method, behavior) từ 1 Class khác.
+ * - Muốn kế thừa được phải có từ khóa open,
+ * - Có thể dùng open cho class, variable, fun, lambdas
+ * - super dùng để call parent
+ * Kế thừa (Inheritance) là khả năng giúp 1 Class sử dụng lại các thuộc tính (properties) và hàm (method, behavior)
+ * từ 1 Class khác.
  *
- * Khác với C++, Kotlin đơn giản hóa việc kế thừa bằng cách không phân chia ra các loại kế thừa khác nhau như public, hay private. Trong Kotlin, khi nhắc đến kế thừa, chỉ có kế thừa – nothing more.
+ * Khác với C++, Kotlin đơn giản hóa việc kế thừa bằng cách không phân chia ra các loại kế thừa khác nhau như public,
+ * hay private. Trong Kotlin, khi nhắc đến kế thừa, chỉ có kế thừa – nothing more.
  *
  * Access Modifier Base Class	                    Access Modifier Sub Class
  *          private	                                    NOT INHERITANCE
@@ -13,20 +18,54 @@ package org.example.oop
  *          public	                                    public
  */
 // Để một Class có thể kế thừa được Lập trình viên phải thêm từ khóa open trước định nghĩa Class
-open class SampleClass {
-    var publicAttr: String = "public attr"
+open class SampleClass(internal: Int) {
+    // thuộc tính có thể được kế thừa
+    open var publicAttr: String = "public attr"
     internal var internalAttr: String = "internal attr"
     protected var protectedAttr: String = "protected attr"
     private var privateAttr: String = "private attr"
+    var internal: Int
+        private  set
+
+    init {
+        this.internal = internal
+    }
+
+    open val lambdaOperator: (String, String) -> String = { s1, s2 ->
+        "$s1 $s2"
+    }
+
+    open fun print() {
+        println("Call from sample class")
+    }
+
+    fun encodeStringWithKey(key: String, input: String): String {
+        return lambdaOperator.invoke(key, input)
+    }
 }
 
-class SampleSubClass : SampleClass() {
+class SampleSubClass : SampleClass(internal = 0) {
     fun printAttrs() {
         println(publicAttr) // Có thể truy cập
         println(internalAttr) // Có thể truy cập trong cùng module
         println(protectedAttr) // Có thể truy cập trong lớp con
         // println(privateAttr) // Lỗi: không thể truy cập privateAttr
     }
+
+    override fun print() {
+        println("---------------------------")
+        super.print()
+        println("Call from sample subclass")
+    }
+
+    override var publicAttr: String
+        get() = super.publicAttr
+        set(value) {}
+
+    override val lambdaOperator: (String, String) -> String
+        get() = {s1, s2 ->
+            "$s2 $s1 $s2"
+        }
 }
 
 // Ngoài ra còn có thể kế thừa từ sealed class hoặc abstract class
@@ -39,6 +78,9 @@ class SubAbstractClass : SampleAbstractClass()
 // Cú pháp kế thừa
 // Kotlin chặt chẽ trong việc xác định một Class có kế thừa được hay không.
 // Để khai báo một class có khả năng kế thừa bạn cần đặt thêm keyword open trước khai báo class.
+// Để một function của class cha có thể được override ở class con thì function đó cũng phải được khai báo với keyword open
+// Ngoài việc override function thì trong Kotlin cũng có thể override property của class cha bằng cách sử dụng từ khóa
+// open trước thuộc tính cần được override
 open class OpenBaseClass {
     private val privateVar = 1
     protected val protectedVar = 2
@@ -89,7 +131,7 @@ class SubClass : OpenBaseClass() {
 }
 
 fun main() {
-    val sample = SampleClass()
+    val sample = SampleClass(internal = 10)
     println(sample.publicAttr) // Prints: public attr
     println(sample.internalAttr) // Prints: internal attr
     // println(sample.protectedAttr) // Lỗi: không thể truy cập từ ngoài lớp
